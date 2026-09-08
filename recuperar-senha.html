@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar Senha — Lume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+      <nav class="nav-left">
+        <a href="index.html#colecao">Coleção</a>
+        <a href="index.html#sobre">Sobre</a>
+      </nav>
+      <a href="index.html" class="logo">Lume</a>
+      <nav class="nav-right">
+        <a href="guia-de-cuidados.html">Guia de cuidados</a>
+        <a href="favoritos.html" class="icon-link" aria-label="Favoritos">♥</a>
+        <span id="authArea" class="auth-area"></span>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-section">
+    <div class="auth-card">
+      <h2 class="section-title">🔐 Recuperar Senha</h2>
+      <p class="section-sub">Digite seu e-mail para receber o link de redefinição.</p>
+
+      <form id="recuperarForm" class="auth-form">
+        <label>
+          E-mail
+          <input type="email" name="email" id="emailRecuperacao" required>
+        </label>
+        <p class="form-error" id="formError" hidden></p>
+        <p class="form-success" id="formSuccess" hidden style="color: #4CAF50; text-align: center;"></p>
+        <button type="submit" class="btn btn-primary btn-full">Enviar Instruções</button>
+      </form>
+
+      <p class="auth-switch">
+        <a href="login.html">← Voltar para o login</a>
+      </p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p class="logo footer-logo">Lume</p>
+    <p>Atendimento: contato@lume.com.br</p>
+    <p class="fine-print">© 2026 Lume. Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="js/auth-ui.js"></script>
+  <script>
+    document.getElementById("recuperarForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const errorEl = document.getElementById("formError");
+      const successEl = document.getElementById("formSuccess");
+      const btn = e.target.querySelector("button[type='submit']");
+      const email = document.getElementById("emailRecuperacao").value.trim();
+      
+      errorEl.hidden = true;
+      successEl.hidden = true;
+      
+      btn.disabled = true;
+      btn.textContent = "Enviando...";
+
+      try {
+        const response = await fetch("/api/esqueci-senha", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          errorEl.textContent = data.error || "Erro ao enviar.";
+          errorEl.hidden = false;
+          return;
+        }
+
+        successEl.textContent = data.message || "E-mail enviado! Verifique sua caixa de entrada.";
+        successEl.hidden = false;
+        document.getElementById("emailRecuperacao").value = "";
+        
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = "Erro ao conectar com o servidor.";
+        errorEl.hidden = false;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Enviar Instruções";
+      }
+    });
+  </script>
+</body>
+</html>
